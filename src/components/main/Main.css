@@ -1,0 +1,6 @@
+.mainSection {
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px 30px;
+  grid-column: 2;
+}

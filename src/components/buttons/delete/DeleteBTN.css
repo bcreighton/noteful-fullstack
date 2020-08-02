@@ -1,0 +1,9 @@
+#delete {
+  padding: 15px;
+  margin-bottom: 20px;
+  z-index: 100;
+}
+
+#delete:hover {
+  background-color: red;
+}

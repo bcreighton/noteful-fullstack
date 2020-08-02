@@ -1,0 +1,11 @@
+.btn#goBack {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.activeNote .folderName {
+  width: 90%;
+  font-size: 2rem;
+  margin-top: 30px;
+  text-align: right;
+}

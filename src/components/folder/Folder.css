@@ -1,0 +1,11 @@
+.folder {
+  width: 90%;
+  margin: 10px auto;
+  padding: 20px 0;
+  font-size: 1.5rem;
+  border: 1px solid black;
+}
+
+.active .folder {
+  background-color: lightblue;
+}

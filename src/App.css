@@ -1,0 +1,34 @@
+.App {
+  margin: 0 auto;
+  padding: 0 40px;
+  text-align: center;
+}
+
+.header, .mainContainer {
+  border: 2px black solid;
+}
+
+.header {
+  margin: 0 auto;
+  height: 150px;
+  border-bottom: none;
+  border-top: none;
+}
+
+.mainContainer {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-template-rows: 1fr;
+  margin: 0 auto;
+}
+
+.mainContainer.activeNote {
+  grid-template-rows: 1fr 2fr;
+}
+
+a, a:hover, a:visited, a:active {
+  width: 100%;
+  text-decoration: none;
+  cursor: pointer;
+  color: black;
+}

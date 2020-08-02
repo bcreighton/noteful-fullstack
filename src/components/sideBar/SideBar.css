@@ -1,0 +1,12 @@
+.sideBar {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  margin: 0;
+  padding: 20px 10px;
+  border-right: 2px solid black;
+}
+
+.sideBar.activeNote {
+  grid-row: 1 / 3;
+}
+
