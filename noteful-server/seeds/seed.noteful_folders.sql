@@ -1,0 +1,22 @@
+INSERT INTO noteful_folders (name) 
+VALUES
+    ('Twinte'),
+    ('Shufflester'),
+    ('Trupe'),
+    ('Thoughtsphere'),
+    ('Topicshots'),
+    ('Realcube'),
+    ('Quire'),
+    ('Eare'),
+    ('Wikido'),
+    ('Aibox'),
+    ('Katz'),
+    ('Eabox'),
+    ('Yakijo'),
+    ('Skajo'),
+    ('Meemm'),
+    ('Meembee'),
+    ('Realcube'),
+    ('Eayo'),
+    ('Pixoboo'),
+    ('Skaboo');
