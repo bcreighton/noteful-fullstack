@@ -15,6 +15,10 @@ app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
 
+app.get('/notes', (req, res, next) => {
+  res.send('All notes')
+})
+
 app.get('/', (req, res) => {
   res.send('Hello, Noteful!')
 })
