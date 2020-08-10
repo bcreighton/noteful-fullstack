@@ -122,7 +122,7 @@ describe.only('Notes service object', function () {
 
   after(() => db.destroy())
 
-  context(`Given 'noteful_notes' has data`, () => {
+  context(`Given 'noteful_folders' has data`, () => {
     beforeEach(() => {
       return db
         .into('noteful_folders')
@@ -131,105 +131,6 @@ describe.only('Notes service object', function () {
           return db
             .into('noteful_notes')
             .insert(testNotes)
-        })
-    })
-
-    it(`getAllNotes() resolves all notes from 'noteful_notes' table`, () => {
-      // test that NoteService.getAllNotes gets data
-      return NotesService.getAllNotes(db)
-        .then(actual => {
-          expect(actual).to.eql(testNotes)
-        })
-    })
-
-    it(`getById() resolves a note by id from 'noteful_notes' table`, () => {
-      const thirdId = 3
-      const thirdTestNote = testNotes[thirdId - 1]
-
-      return NotesService.getById(db, thirdId)
-        .then(actual => {
-          expect(actual).to.eql({
-            id: thirdId,
-            name: thirdTestNote.name,
-            content: thirdTestNote.content,
-            date: thirdTestNote.date,
-            folder_id: thirdTestNote.folder_id
-          })
-        })
-    })
-
-    it(`deleteNote() removes a note by id from 'noteful_notes' table`, () => {
-      const noteId = 3
-
-      return NotesService.deleteNote(db, noteId)
-        .then(() => NotesService.getAllNotes(db))
-        .then(allNotes => {
-          // copy the test array without the deleted note
-
-          const expected = testNotes.filter(note => note.id !== noteId)
-          expect(allNotes).to.eql(expected)
-        })
-    })
-
-    it(`updateNote() updates a note from the 'noteful_notes' table`, () => {
-      const idOfNoteToUpdate = 3
-      const newNoteData = {
-        name: 'updated name',
-        content: 'updated content',
-        date: new Date(),
-      }
-
-      return NotesService.updateNote(db, idOfNoteToUpdate, newNoteData)
-        .then(() => NotesService.getById(db, idOfNoteToUpdate))
-        .then(note => {
-          expect(note).to.eql({
-            id: idOfNoteToUpdate,
-            folder_id: note.folder_id,
-            ...newNoteData,
-          })
-        })
-    })
-
-    it(`getAllFolders() resolves all folders from 'noteful_folders' table`, () => {
-      // test that NoteService.getAllFolders gets data
-      return FoldersService.getAllFolders(db)
-        .then(actual => {
-          expect(actual).to.eql(testFolders)
-        })
-    })
-  })
-
-  context(`Given 'noteful_notes' has no data`, () => {
-    beforeEach(() => {
-      return db
-        .into('noteful_folders')
-        .insert(testFolders)
-    })
-
-    it(`getAllNotes() resolves an empty array`, () => {
-      return NotesService.getAllNotes(db)
-        .then(actual => {
-          expect(actual).to.eql([])
-        })
-    })
-
-    it(`insertNote() inserts a new note and resolves the new note with an 'id'`, () => {
-      const newNote = {
-        name: 'Test new name',
-        content: 'Test new content',
-        date: new Date('2029-01-22T16:28:32.615Z'),
-        folder_id: 2
-      }
-
-      return NotesService.insertNote(db, newNote)
-        .then(actual => {
-          expect(actual).to.eql({
-            id: 1,
-            name: newNote.name,
-            content: newNote.content,
-            date: newNote.date,
-            folder_id: newNote.folder_id,
-          })
         })
     })
   })
