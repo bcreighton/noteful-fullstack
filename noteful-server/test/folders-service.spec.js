@@ -142,7 +142,44 @@ describe.only('Notes service object', function () {
         })
     })
 
-    it(`getById() resolvess a folder by id from 'noteful_folders' table`, () => {
+    it(`getById() resolves a folder by id from 'noteful_folders`, () => {
+      const thirdId = 3
+      const thirdTestFolder = testFolders[thirdId - 1]
+
+      return FoldersService.getById(db, thirdId)
+        .then(actual => {
+          expect(actual).to.eql({
+            id: thirdId,
+            name: thirdTestFolder.name,
+          })
+        })
+    })
+
+    it(`deleteFolder() removes a folder by id from 'noteful_folders' table`, () => {
+      const folderId = 3
+
+      return FoldersService.deleteFolder(db, folderId)
+        .then(() => FoldersService.getAllFolders(db))
+        .then(allFolders => {
+          const expected = testFolders.filter(folder => folder.id !== folderId)
+          expect(allFolders).to.eql(expected)
+        })
+    })
+
+    it(`updateFolder() updates a folder from the 'noteful_folders' table`, () => {
+      const idOfFolderToUpdate = 3
+      const newFolderData = {
+        name: 'updated name',
+      }
+
+      return FoldersService.updateFolder(db, idOfFolderToUpdate, newFolderData)
+        .then(() => FoldersService.getById(db, idOfFolderToUpdate))
+        .then(folder => {
+          expect(folder).to.eql({
+            id: idOfFolderToUpdate,
+            ...newFolderData,
+          })
+        })
     })
   })
 
@@ -155,7 +192,7 @@ describe.only('Notes service object', function () {
     })
 
     it(`insertFolder() inserts a new folder and resolves the new folder with an 'id'`, () => {
-      const newFolder= {
+      const newFolder = {
         name: "Test new name",
       }
 
