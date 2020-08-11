@@ -133,5 +133,39 @@ describe.only('Notes service object', function () {
             .insert(testNotes)
         })
     })
+
+    it(`getAllFolders() resolves all folders from 'noteful_folders' table`, () => {
+      // test that FoldersService.getAllFolders gets data
+      return FoldersService.getAllFolders(db)
+        .then(actual => {
+          expect(actual).to.eql(testFolders)
+        })
+    })
+
+    it(`getById() resolvess a folder by id from 'noteful_folders' table`, () => {
+    })
+  })
+
+  context(`Given 'noteful_folders' has no data`, () => {
+    it(`getAllFolders() resolves an empty array`, () => {
+      return FoldersService.getAllFolders(db)
+        .then(actual => {
+          expect(actual).to.eql([])
+        })
+    })
+
+    it(`insertFolder() inserts a new folder and resolves the new folder with an 'id'`, () => {
+      const newFolder= {
+        name: "Test new name",
+      }
+
+      return FoldersService.insertFolder(db, newFolder)
+        .then(actual => {
+          expect(actual).to.eql({
+            id: actual.id,
+            name: newFolder.name,
+          })
+        })
+    })
   })
 })
