@@ -4,6 +4,8 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
+const NotesService = require('./notes-service')
+const FoldersService = require('./folders-service')
 
 const app = express()
 
@@ -16,7 +18,13 @@ app.use(helmet())
 app.use(cors())
 
 app.get('/notes', (req, res, next) => {
-  res.send('All notes')
+  const knexInstance = req.app.get('db')
+
+  NotesService.getAllNotes(knexInstance)
+    .then(notes => {
+      res.json(notes)
+    })
+    .catch(next)
 })
 
 app.get('/', (req, res) => {
