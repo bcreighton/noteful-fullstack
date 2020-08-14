@@ -101,7 +101,7 @@ describe('Notes service object', function () {
     },
   ]
 
-  before('make knex instance', () => {
+  before(() => {
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DB_URL,
@@ -109,25 +109,25 @@ describe('Notes service object', function () {
   })
 
   //remove foreign key constraint temporarily to remove current table data before tests run
-  before('remove foreign key constraints', () => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-  before('clean noteful_notes table', () => db('noteful_notes').truncate())
-  before('clean noteful_folders table', () => db('noteful_folders').truncate())
-  before('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+  before(() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
+  before(() => db('noteful_notes').truncate())
+  before(() => db('noteful_folders').truncate())
+  before(() => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
 
   //remove foreign key constraint temporarily to remove current table data to avoid test leak
-  afterEach('remove foreign key constraints',() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-  afterEach('clean noteful_notes table', () => db('noteful_notes').truncate())
-  afterEach('clean noteful_folders table', () => db('noteful_folders').truncate())
-  afterEach('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+  afterEach(() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
+  afterEach(() => db('noteful_notes').truncate())
+  afterEach(() => db('noteful_folders').truncate())
+  afterEach(() => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
 
-  after('disconnect from db', () => db.destroy())
+  after(() => db.destroy())
 
   context(`Given 'noteful_notes' has data`, () => {
-    beforeEach('insert folders', () => {
+    beforeEach(() => {
       return db
         .into('noteful_folders')
         .insert(testFolders)
-        .then('insert notes', () => {
+        .then(() => {
           return db
             .into('noteful_notes')
             .insert(testNotes)
@@ -200,7 +200,7 @@ describe('Notes service object', function () {
   })
 
   context(`Given 'noteful_notes' has no data`, () => {
-    beforeEach('insert folders', () => {
+    beforeEach(() => {
       return db
         .into('noteful_folders')
         .insert(testFolders)
