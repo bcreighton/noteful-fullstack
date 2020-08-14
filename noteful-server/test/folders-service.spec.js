@@ -3,7 +3,7 @@ const FoldersService = require('../src/folders-service')
 const knex = require('knex')
 const { expect } = require('chai')
 
-describe.only('Notes service object', function () {
+describe('Notes service object', function () {
   let db
   let testFolders = [
     {
