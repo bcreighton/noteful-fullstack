@@ -4,8 +4,8 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
-const NotesService = require('./notes-service')
-const FoldersService = require('./folders-service')
+const NotesService = require('./notes/notes-service')
+const FoldersService = require('./folders/folders-service')
 
 const app = express()
 const jsonParser = express.json()
@@ -85,6 +85,21 @@ app.get('/folders/:folder_id', (req, res, next) => {
             }
           })
         : res.json(folder)
+    })
+    .catch(next)
+})
+
+app.post(`/folders`, (req, res, next) => {
+  debugger;
+  const knexInstance = req.app.get('db')
+  const {name} = req.body
+  const newFolder = {name}
+
+  FoldersService.insertFolder(knexInstance, newFolder)
+    .then(folder => {
+      res
+        .status(201)
+        .json(folder)
     })
     .catch(next)
 })

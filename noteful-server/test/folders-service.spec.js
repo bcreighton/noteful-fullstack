@@ -1,5 +1,5 @@
-const NotesService = require('../src/notes-service')
-const FoldersService = require('../src/folders-service')
+const NotesService = require('../src/notes/notes-service')
+const FoldersService = require('../src/folders/folders-service')
 const knex = require('knex')
 const { expect } = require('chai')
 

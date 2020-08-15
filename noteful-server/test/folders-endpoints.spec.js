@@ -4,11 +4,10 @@ const app = require('../src/app')
 const {makeNotesArray} = require('./notes.fixtures')
 const {makeFoldersArray} = require('./folders.fixtures')
 
-describe.only('Notes Endpoints', function() {
+describe.only('Folders Endpoints', function() {
     let db
 
     before('make knex instance', () => {
-        console.log(process.env.TEST_DB_URL)
         db = knex({
             client: 'pg',
             connection: process.env.TEST_DB_URL,
@@ -101,6 +100,21 @@ describe.only('Notes Endpoints', function() {
                     .get(`/folders/${folderId}`)
                     .expect(200, expectedFolder)
             })
+        })
+    })
+
+    describe(`POST /folders`, () => {
+        debugger;
+        it(`creates a folder, responding with 201 and the new folder`, () => {
+            debugger;
+            const newFolder = {
+                name: 'Test new folder',
+            }
+
+            return supertest(app)
+                .post(`/folders`)
+                .send(newFolder)
+                .expect(201)
         })
     })
 })

@@ -8,7 +8,6 @@ describe.only('Notes Endpoints', function() {
     let db
 
     before('make knex instance', () => {
-        console.log(process.env.TEST_DB_URL)
         db = knex({
             client: 'pg',
             connection: process.env.TEST_DB_URL,
@@ -105,17 +104,17 @@ describe.only('Notes Endpoints', function() {
 
     describe(`POST /notes`, () => {
         const testFolders = makeFoldersArray()
-            const testNotes = makeNotesArray()
+        const testNotes = makeNotesArray()
             
-              beforeEach('test',() => {
-                  return db
-                    .into('noteful_folders')
-                    .insert(testFolders)
-            })
+        beforeEach('test',() => {
+            return db
+            .into('noteful_folders')
+            .insert(testFolders)
+        })
 
         it(`creates a note, responding with 201 and the new note`, () => {
             this.retries(3)
-            
+
             const newNote = {
                 name: 'Test new note',
                 content: 'Test new note content',
