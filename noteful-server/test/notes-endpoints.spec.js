@@ -1,6 +1,8 @@
 const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
+const {makeNotesArray} = require('./notes.fixtures')
+const {makeFoldersArray} = require('./folders.fixtures')
 
 describe.only('Notes Endpoints', function() {
     let db
@@ -29,118 +31,116 @@ describe.only('Notes Endpoints', function() {
 
     after('disconnect from db', () => db.destroy())
 
-    context(`Given there are notes in the db`, () => {
-        const testFolders = [
-            {
-              id: 1,
-              "name": "Brassicaceae"
-            },
-            {
-              id: 2,
-              "name": "Saxifragaceae"
-            },
-            {
-              id: 3,
-              "name": "Cyperaceae"
-            },
-            {
-              id: 4,
-              "name": "Onagraceae"
-            },
-            {
-              id: 5,
-              "name": "Asteraceae"
+    describe(`GET /notes`, () => {
+        context(`Given no notes`, () => {
+            it(`responds with 200 and an empty list`, () => {
+                return supertest(app)
+                    .get('/notes')
+                    .expect(200, [])
+            })
+        })
+
+        context(`Given there are notes in the db`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+            
+              beforeEach('Insert folders and notes into db',() => {
+                  return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
+              })
+    
+              it(`response with 200 and all of the notes`, () => {
+                  return supertest(app)
+                    .get('/notes')
+                    .expect(200, testNotes)
+              })
+        })
+    })
+
+    describe(`GET /notes/:note_id`, () => {
+        context(`Given no notes`, () => {
+            it(`responds with 404`, () => {
+                const noteId = 1234567890
+
+                return supertest(app)
+                    .get(`/notes/${noteId}`)
+                    .expect(404, {
+                        error: {
+                            message: `Note doesn't exist`
+                        }
+                    })
+            })
+        })
+        context(`Given there are notes in the database`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+            
+              beforeEach('test',() => {
+                  return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
+              })
+
+            it(`response wtih 200 and the specified note`, () => {
+                const noteId = 2
+                const expectedNote = testNotes[noteId - 1]
+
+                return supertest(app)
+                .get(`/notes/${noteId}`)
+                .expect(200, expectedNote)
+            })
+        })
+    })
+
+    describe(`POST /notes`, () => {
+        const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+            
+              beforeEach('test',() => {
+                  return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+
+        it(`creates a note, responding with 201 and the new note`, () => {
+            this.retries(3)
+            
+            const newNote = {
+                name: 'Test new note',
+                content: 'Test new note content',
+                folder_id: 1,
             }
-          ]
-        
-        const testNotes = [
-            {
-                id: 1,
-                "name": "Hooker's Silene",
-                "content": "Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 2
-            },
-            {
-                id: 2,
-                "name": "Woodland Tuftedorchid",
-                "content": "In congue. Etiam justo. Etiam pretium iaculis justo.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 4
-            },
-            {
-                id: 3,
-                "name": "Miege Clover",
-                "content": "Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.\n\nMorbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 1
-            },
-            {
-                id: 4,
-                "name": "Sneezeweed",
-                "content": "Sed ante. Vivamus tortor. Duis mattis egestas metus.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 2
-            },
-            {
-                id: 5,
-                "name": "Spurred Butterfly Pea",
-                "content": "Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros.\n\nVestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 1
-            },
-            {
-                id: 6,
-                "name": "Cloudforest Magnolia",
-                "content": "Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 5
-            },
-            {
-                id: 7,
-                "name": "Del Norte County Iris",
-                "content": "Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.\n\nInteger ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 4
-            },
-            {
-                id: 8,
-                "name": "Queen Charlotte Island False Rue Anemone",
-                "content": "Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 3
-            },
-            {
-                id: 9,
-                "name": "Alpine Bulrush",
-                "content": "Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.\n\nProin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.\n\nDuis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 2
-            },
-            {
-                id: 10,
-                "name": "Niihau Lobelia",
-                "content": "Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.\n\nCras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.\n\nQuisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.",
-                "date": '2029-01-22T16:28:32.615Z',
-                "folder_id": 2
-            },
-        ];
 
-          beforeEach('test',() => {
-              return db
-                .into('noteful_folders')
-                .insert(testFolders)
-                .then(() => {
-                    return db
-                        .into('noteful_notes')
-                        .insert(testNotes)
+            return supertest(app)
+                .post(`/notes`)
+                .send(newNote)
+                .expect(res => {
+                    expect(res.body.name).to.eql(newNote.name)
+                    expect(res.body.content).to.eql(newNote.content)
+                    expect(res.body.folder_id).to.eql(newNote.folder_id)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
+                    
+                    const expected = new Date().toLocaleString()
+                    const actual = new Date(res.body.date).toLocaleString()
+                    expect(actual).to.eql(expected)
                 })
-          })
-
-          it(`GET /notes response with 200 and all of the notes`, () => {
-              return supertest(app)
-                .get('/notes')
-                .expect(200, testNotes)
-          })
+                .then(postRes=> 
+                    supertest(app)
+                        .get(`/notes/${postRes.body.id}`)
+                        .expect(postRes.body)
+                )
+        })
     })
 })
