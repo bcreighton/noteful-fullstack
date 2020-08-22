@@ -119,7 +119,6 @@ describe.only('Folders Endpoints', function() {
             })
 
         it(`creates a folder, responding with 201 and the new folder`, () => {
-            debugger;
             const newFolder = {
                 name: 'Test new folder',
             }
