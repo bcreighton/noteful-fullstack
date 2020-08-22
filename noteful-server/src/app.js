@@ -37,19 +37,19 @@ app.get('/notes/:note_id', (req, res, next) => {
     .then(note => {
       !note
         ? res.status(404).json({
-            error: {
-              message: `Note doesn't exist`
-            }
-          })
+          error: {
+            message: `Note doesn't exist`
+          }
+        })
         : res.json(note)
     })
     .catch(next)
 })
 
-app.post('/notes',jsonParser, (req, res, next) => {
+app.post('/notes', jsonParser, (req, res, next) => {
   const knexInstance = req.app.get('db')
-  const {name, content, folder_id} = req.body
-  const newNote = {name, content, folder_id}
+  const { name, content, folder_id } = req.body
+  const newNote = { name, content, folder_id }
 
   NotesService.insertNote(knexInstance, newNote)
     .then(note => {
@@ -63,7 +63,7 @@ app.post('/notes',jsonParser, (req, res, next) => {
 
 // /folder routes
 
-app.get('/folders', (req, res, next) =>  {
+app.get('/folders', (req, res, next) => {
   const knexInstance = req.app.get('db')
 
   FoldersService.getAllFolders(knexInstance)
@@ -80,10 +80,10 @@ app.get('/folders/:folder_id', (req, res, next) => {
     .then(folder => {
       !folder
         ? res.status(404).json({
-            error: {
-              message: `Folder doesn't exist`
-            }
-          })
+          error: {
+            message: `Folder doesn't exist`
+          }
+        })
         : res.json(folder)
     })
     .catch(next)
@@ -91,13 +91,11 @@ app.get('/folders/:folder_id', (req, res, next) => {
 
 app.post(`/folders`, jsonParser, (req, res, next) => {
   const knexInstance = req.app.get('db')
-  const {name} = req.body
-  const newFolder = {name}
-  debugger
+  const { name } = req.body
+  const newFolder = { name }
 
   FoldersService.insertFolder(knexInstance, newFolder)
     .then(folder => {
-      debugger;
       res
         .status(201)
         .json(folder)

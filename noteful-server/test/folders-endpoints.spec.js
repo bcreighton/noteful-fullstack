@@ -1,10 +1,10 @@
 const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
-const {makeNotesArray} = require('./notes.fixtures')
-const {makeFoldersArray} = require('./folders.fixtures')
+const { makeNotesArray } = require('./notes.fixtures')
+const { makeFoldersArray } = require('./folders.fixtures')
 
-describe.only('Folders Endpoints', function() {
+describe.only('Folders Endpoints', function () {
     let db
 
     before('make knex instance', () => {
@@ -16,17 +16,13 @@ describe.only('Folders Endpoints', function() {
         app.set('db', db)
     })
 
-    //remove foreign key constraint temporarily to remove current table data before tests run
-    before('remove foreign key constraints', () => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-    before('clean noteful_notes table', () => db('noteful_notes').truncate())
-    before('clean noteful_folders table', () => db('noteful_folders').truncate())
-    before('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+    before(() =>
+        db.raw("TRUNCATE TABLE noteful_folders CASCADE")
+    )
 
-    //remove foreign key constraint temporarily to remove current table data to avoid test leak
-    afterEach('remove foreign key constraints',() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-    afterEach('clean noteful_notes table', () => db('noteful_notes').truncate())
-    afterEach('clean noteful_folders table', () => db('noteful_folders').truncate())
-    afterEach('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+    afterEach(() =>
+        db.raw("TRUNCATE TABLE noteful_folders CASCADE")
+    )
 
     after('disconnect from db', () => db.destroy())
 
@@ -43,15 +39,15 @@ describe.only('Folders Endpoints', function() {
             const testFolders = makeFoldersArray()
             const testNotes = makeNotesArray()
 
-            beforeEach('Insert folders and notes into db',() => {
+            beforeEach('Insert folders and notes into db', () => {
                 return db
-                  .into('noteful_folders')
-                  .insert(testFolders)
-                  .then(() => {
-                      return db
-                          .into('noteful_notes')
-                          .insert(testNotes)
-                  })
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
             })
 
             it(`responds with 200 and all the folders`, () => {
@@ -81,15 +77,15 @@ describe.only('Folders Endpoints', function() {
             const testFolders = makeFoldersArray()
             const testNotes = makeNotesArray()
 
-            beforeEach('Insert folders and notes into db',() => {
+            beforeEach('Insert folders and notes into db', () => {
                 return db
-                  .into('noteful_folders')
-                  .insert(testFolders)
-                  .then(() => {
-                      return db
-                          .into('noteful_notes')
-                          .insert(testNotes)
-                  })
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
             })
 
             it(`responds with 200 and the specific folder`, () => {
@@ -107,16 +103,16 @@ describe.only('Folders Endpoints', function() {
         const testFolders = makeFoldersArray()
         const testNotes = makeNotesArray()
 
-            beforeEach('Insert folders and notes into db',() => {
-                return db
-                  .into('noteful_folders')
-                  .insert(testFolders)
-                  .then(() => {
-                      return db
+        beforeEach('Insert folders and notes into db', () => {
+            return db
+                .into('noteful_folders')
+                .insert(testFolders)
+                .then(() => {
+                    return db
                         .into('noteful_notes')
                         .insert(testNotes)
-                  })
-            })
+                })
+        })
 
         it(`creates a folder, responding with 201 and the new folder`, () => {
             const newFolder = {
