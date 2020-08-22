@@ -98,6 +98,7 @@ app.post(`/folders`, jsonParser, (req, res, next) => {
     .then(folder => {
       res
         .status(201)
+        .location(`/folders/${folder.id}`)
         .json(folder)
     })
     .catch(next)

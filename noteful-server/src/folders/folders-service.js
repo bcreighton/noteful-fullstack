@@ -11,6 +11,7 @@ const FoldersService = {
       .into('noteful_folders')
       .returning('*')
       .then(rows => {
+        debugger
         return rows[0]
       })
   },

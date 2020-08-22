@@ -122,7 +122,16 @@ describe.only('Folders Endpoints', function () {
             return supertest(app)
                 .post(`/folders`)
                 .send(newFolder)
-                .expect(201)
+                .expect(res => {
+                    expect(res.body.name).to.eql(newFolder.name)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
+                })
+                .then(postRes =>
+                    supertest(app)
+                        .get(`/folders/${postRes.body.id}`)
+                        .expect(postRes.body)
+                )
         })
     })
 })
