@@ -18,7 +18,8 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "type": "pwa-node"
+      "type": "pwa-node",
+      "env": {"TEST_DB_URL":"postgresql://bryson:creativedev@localhost/noteful_test"}
     },
     {
       "type": "node",

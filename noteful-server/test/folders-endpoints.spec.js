@@ -104,7 +104,20 @@ describe.only('Folders Endpoints', function() {
     })
 
     describe(`POST /folders`, () => {
-        debugger;
+        const testFolders = makeFoldersArray()
+        const testNotes = makeNotesArray()
+
+            beforeEach('Insert folders and notes into db',() => {
+                return db
+                  .into('noteful_folders')
+                  .insert(testFolders)
+                  .then(() => {
+                      return db
+                        .into('noteful_notes')
+                        .insert(testNotes)
+                  })
+            })
+
         it(`creates a folder, responding with 201 and the new folder`, () => {
             debugger;
             const newFolder = {

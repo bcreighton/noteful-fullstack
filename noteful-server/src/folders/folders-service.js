@@ -6,6 +6,7 @@ const FoldersService = {
   },
 
   insertFolder(knex, newFolder) {
+    debugger
     return knex
       .insert(newFolder)
       .into('noteful_folders')

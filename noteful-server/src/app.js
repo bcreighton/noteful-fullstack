@@ -89,14 +89,15 @@ app.get('/folders/:folder_id', (req, res, next) => {
     .catch(next)
 })
 
-app.post(`/folders`, (req, res, next) => {
-  debugger;
+app.post(`/folders`, jsonParser, (req, res, next) => {
   const knexInstance = req.app.get('db')
   const {name} = req.body
   const newFolder = {name}
+  debugger
 
   FoldersService.insertFolder(knexInstance, newFolder)
     .then(folder => {
+      debugger;
       res
         .status(201)
         .json(folder)
