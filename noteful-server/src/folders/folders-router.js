@@ -1,4 +1,5 @@
 const express = require('express')
+const xss = require('xss')
 const FoldersService = require('./folders-service')
 
 const foldersRouter = express.Router()
@@ -39,7 +40,10 @@ foldersRouter
               message: `Folder doesn't exist`
             }
           })
-          : res.json(folder)
+          : res.json({
+              id: folder.id,
+              name: xss(folder.name)
+          })
       })
       .catch(next)
   })

@@ -97,42 +97,89 @@ describe('Folders Endpoints', function () {
                     .expect(200, expectedFolder)
             })
         })
+
+        context(`Given an XSS attack folder`, () => {
+            const maliciousFolder = {
+                id: 911,
+                name: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+            }
+
+            beforeEach(`insert malicious folder`, () => {
+                return db
+                    .into('noteful_folders')
+                    .insert([maliciousFolder])
+            })
+
+            it(`removes XSS attack content`, () => {
+                return supertest(app)
+                    .get(`/folders/${maliciousFolder.id}`)
+                    .expect(200)
+                    .expect(res => {
+                        expect(res.body.name).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+                    })
+            })
+        })
     })
 
     describe(`POST /folders`, () => {
-        const testFolders = makeFoldersArray()
-        const testNotes = makeNotesArray()
+        context(`Insert folder`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
 
-        beforeEach('Insert folders and notes into db', () => {
-            return db
-                .into('noteful_folders')
-                .insert(testFolders)
-                .then(() => {
-                    return db
-                        .into('noteful_notes')
-                        .insert(testNotes)
-                })
+            beforeEach('Insert folders and notes into db', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
+            })
+
+            it(`creates a folder, responding with 201 and the new folder`, () => {
+                const newFolder = {
+                    id: 6,
+                    name: 'Test new folder',
+                }
+
+                return supertest(app)
+                    .post(`/folders`)
+                    .send(newFolder)
+                    .expect(res => {
+                        expect(res.body.name).to.eql(newFolder.name)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
+                    })
+                    .then(postRes =>
+                        supertest(app)
+                            .get(`/folders/${postRes.body.id}`)
+                            .expect(postRes.body)
+                    )
+            })
         })
 
-        it(`creates a folder, responding with 201 and the new folder`, () => {
-            const newFolder = {
-                id: 6,
-                name: 'Test new folder',
+        context(`Given an XSS attack`, () => {
+            const maliciousFolder = {
+                name: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`
             }
 
-            return supertest(app)
-                .post(`/folders`)
-                .send(newFolder)
-                .expect(res => {
-                    expect(res.body.name).to.eql(newFolder.name)
-                    expect(res.body).to.have.property('id')
-                    expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
-                })
-                .then(postRes =>
-                    supertest(app)
-                        .get(`/folders/${postRes.body.id}`)
-                        .expect(postRes.body)
-                )
+            it(`removes XSS attack content`, () => {
+                return supertest(app)
+                    .post(`/folders`)
+                    .send(maliciousFolder)
+                    .expect(res => {
+                        expect(res.body.name).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`'/folders/${res.body.id}`)
+                    })
+                    .then(postRes => 
+                            supertest(app)
+                                .get(`/folders/${postRes.body.id}`)
+                                .expect(postRes.body)
+                        )
+            })
         })
+        
     })
 })

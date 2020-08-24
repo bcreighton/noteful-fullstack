@@ -1,4 +1,5 @@
 const express = require('express')
+const xss = require('xss')
 const NotesService = require('./notes-service')
 
 const notesRouter = express.Router()
@@ -48,7 +49,13 @@ notesRouter
               message: `Note doesn't exist`
             }
           })
-          : res.json(note)
+          : res.json({
+              id: note.id,
+              name: xss(note.name),
+              content: xss(note.content),
+              folder_id: note.folder_id,
+              date: note.date,
+          })
       })
       .catch(next)
   })
