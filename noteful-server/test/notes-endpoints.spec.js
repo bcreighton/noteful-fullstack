@@ -99,7 +99,7 @@ describe('Notes Endpoints', function () {
         })
     })
 
-    describe(`POST /notes`, () => {
+    describe.only(`POST /notes`, () => {
         const testFolders = makeFoldersArray()
         const testNotes = makeNotesArray()
 
@@ -137,6 +137,29 @@ describe('Notes Endpoints', function () {
                         .get(`/notes/${postRes.body.id}`)
                         .expect(postRes.body)
                 )
+        })
+
+        const requiredFields = ['name', 'content', 'folder_id']
+
+        requiredFields.forEach(field => {
+            const newNote = {
+                name: 'Test new note name',
+                content: 'Test new note content',
+                folder_id: 1,
+            }
+
+            it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+                delete newNote[field]
+
+                return supertest(app)
+                    .post('/notes')
+                    .send(newNote)
+                    .expect(400, {
+                        error: {
+                            message: `Missing '${field}' in request body`
+                        }
+                    })
+            })
         })
     })
 })

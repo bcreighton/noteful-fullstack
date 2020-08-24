@@ -4,11 +4,10 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
-const NotesService = require('./notes/notes-service')
-const FoldersService = require('./folders/folders-service')
+const notesRouter = require('./notes/notes-router')
+const foldersRouter = require('./folders/folders-router')
 
 const app = express()
-const jsonParser = express.json()
 
 const morganOption = (NODE_ENV === 'production')
   ? 'tiny'
@@ -18,91 +17,8 @@ app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
 
-// /notes routes
-
-app.get('/notes', (req, res, next) => {
-  const knexInstance = req.app.get('db')
-
-  NotesService.getAllNotes(knexInstance)
-    .then(notes => {
-      res.json(notes)
-    })
-    .catch(next)
-})
-
-app.get('/notes/:note_id', (req, res, next) => {
-  const knexInstance = req.app.get('db')
-
-  NotesService.getById(knexInstance, req.params.note_id)
-    .then(note => {
-      !note
-        ? res.status(404).json({
-          error: {
-            message: `Note doesn't exist`
-          }
-        })
-        : res.json(note)
-    })
-    .catch(next)
-})
-
-app.post('/notes', jsonParser, (req, res, next) => {
-  const knexInstance = req.app.get('db')
-  const { name, content, folder_id } = req.body
-  const newNote = { name, content, folder_id }
-
-  NotesService.insertNote(knexInstance, newNote)
-    .then(note => {
-      res
-        .status(201)
-        .location(`/notes/${note.id}`)
-        .json(note)
-    })
-    .catch(next)
-})
-
-// /folder routes
-
-app.get('/folders', (req, res, next) => {
-  const knexInstance = req.app.get('db')
-
-  FoldersService.getAllFolders(knexInstance)
-    .then(folders => {
-      res.json(folders)
-    })
-    .catch(next)
-})
-
-app.get('/folders/:folder_id', (req, res, next) => {
-  const knexInstance = req.app.get('db')
-
-  FoldersService.getById(knexInstance, req.params.folder_id)
-    .then(folder => {
-      !folder
-        ? res.status(404).json({
-          error: {
-            message: `Folder doesn't exist`
-          }
-        })
-        : res.json(folder)
-    })
-    .catch(next)
-})
-
-app.post(`/folders`, jsonParser, (req, res, next) => {
-  const knexInstance = req.app.get('db')
-  const { name } = req.body
-  const newFolder = { name }
-
-  FoldersService.insertFolder(knexInstance, newFolder)
-    .then(folder => {
-      res
-        .status(201)
-        .location(`/folders/${folder.id}`)
-        .json(folder)
-    })
-    .catch(next)
-})
+app.use('/notes', notesRouter)
+app.use('/folders', foldersRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello, Noteful!')

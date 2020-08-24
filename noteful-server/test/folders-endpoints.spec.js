@@ -4,7 +4,7 @@ const app = require('../src/app')
 const { makeNotesArray } = require('./notes.fixtures')
 const { makeFoldersArray } = require('./folders.fixtures')
 
-describe.only('Folders Endpoints', function () {
+describe('Folders Endpoints', function () {
     let db
 
     before('make knex instance', () => {
@@ -17,11 +17,11 @@ describe.only('Folders Endpoints', function () {
     })
 
     before(() =>
-        db.raw("TRUNCATE TABLE noteful_folders CASCADE")
+        db.raw(`TRUNCATE TABLE noteful_folders CASCADE`), (`RESTART IDENTITY`)
     )
 
     afterEach(() =>
-        db.raw("TRUNCATE TABLE noteful_folders CASCADE")
+        db.raw(`TRUNCATE TABLE noteful_folders CASCADE`), (`RESTART IDENTITY`)
     )
 
     after('disconnect from db', () => db.destroy())
@@ -116,6 +116,7 @@ describe.only('Folders Endpoints', function () {
 
         it(`creates a folder, responding with 201 and the new folder`, () => {
             const newFolder = {
+                id: 6,
                 name: 'Test new folder',
             }
 
