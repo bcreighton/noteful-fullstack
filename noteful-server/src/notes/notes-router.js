@@ -33,7 +33,13 @@ notesRouter
         res
           .status(201)
           .location(`/notes/${note.id}`)
-          .json(note)
+          .json({
+              id: note.id, 
+              name: xss(note.name),
+              content: xss(note.content),
+              folder_id: note.folder_id,
+              date: note.date,
+          })
       })
       .catch(next)
   })

@@ -24,7 +24,10 @@ foldersRouter
         return res
           .status(201)
           .location(`/folders/${folder.id}`)
-          .json(folder)
+          .json({
+              id: folder.id,
+              name: xss(folder.name)
+          })
       })
       .catch(next)
   })

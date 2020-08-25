@@ -171,7 +171,7 @@ describe('Folders Endpoints', function () {
                     .expect(res => {
                         expect(res.body.name).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
                         expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`'/folders/${res.body.id}`)
+                        expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
                     })
                     .then(postRes => 
                             supertest(app)

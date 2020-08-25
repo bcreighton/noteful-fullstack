@@ -131,66 +131,119 @@ describe('Notes Endpoints', function () {
     })
 
     describe(`POST /notes`, () => {
-        const testFolders = makeFoldersArray()
-        const testNotes = makeNotesArray()
+        context(`Insert note`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
 
-        beforeEach('test', () => {
-            return db
-                .into('noteful_folders')
-                .insert(testFolders)
-        })
+            beforeEach('test', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
 
-        it(`creates a note, responding with 201 and the new note`, () => {
-            this.retries(3)
+            it(`creates a note, responding with 201 and the new note`, () => {
+                this.retries(3)
 
-            const newNote = {
-                name: 'Test new note',
-                content: 'Test new note content',
-                folder_id: 1,
-            }
-
-            return supertest(app)
-                .post(`/notes`)
-                .send(newNote)
-                .expect(res => {
-                    expect(res.body.name).to.eql(newNote.name)
-                    expect(res.body.content).to.eql(newNote.content)
-                    expect(res.body.folder_id).to.eql(newNote.folder_id)
-                    expect(res.body).to.have.property('id')
-                    expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
-
-                    const expected = new Date().toLocaleString()
-                    const actual = new Date(res.body.date).toLocaleString()
-                    expect(actual).to.eql(expected)
-                })
-                .then(postRes =>
-                    supertest(app)
-                        .get(`/notes/${postRes.body.id}`)
-                        .expect(postRes.body)
-                )
-        })
-
-        const requiredFields = ['name', 'content', 'folder_id']
-
-        requiredFields.forEach(field => {
-            const newNote = {
-                name: 'Test new note name',
-                content: 'Test new note content',
-                folder_id: 1,
-            }
-
-            it(`responds with 400 and an error message when the '${field}' is missing`, () => {
-                delete newNote[field]
+                const newNote = {
+                    name: 'Test new note',
+                    content: 'Test new note content',
+                    folder_id: 1,
+                }
 
                 return supertest(app)
-                    .post('/notes')
+                    .post(`/notes`)
                     .send(newNote)
-                    .expect(400, {
-                        error: {
-                            message: `Missing '${field}' in request body`
-                        }
+                    .expect(res => {
+                        expect(res.body.name).to.eql(newNote.name)
+                        expect(res.body.content).to.eql(newNote.content)
+                        expect(res.body.folder_id).to.eql(newNote.folder_id)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
+
+                        const expected = new Date().toLocaleString()
+                        const actual = new Date(res.body.date).toLocaleString()
+                        expect(actual).to.eql(expected)
+                    })
+                    .then(postRes =>
+                        supertest(app)
+                            .get(`/notes/${postRes.body.id}`)
+                            .expect(postRes.body)
+                    )
+            })
+
+            const requiredFields = ['name', 'content', 'folder_id']
+
+            requiredFields.forEach(field => {
+                const newNote = {
+                    name: 'Test new note name',
+                    content: 'Test new note content',
+                    folder_id: 1,
+                }
+
+                it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+                    delete newNote[field]
+
+                    return supertest(app)
+                        .post('/notes')
+                        .send(newNote)
+                        .expect(400, {
+                            error: {
+                                message: `Missing '${field}' in request body`
+                            }
+                        })
+                })
+            })
+        })
+
+        context(`Given an XSS attack`, () => {
+            const testFolders = makeFoldersArray()
+
+            beforeEach('test', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+
+            const maliciousNote = {
+                name: 'Naughty naughty very naughty <script>alert("xss");</script>',
+                content: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+                folder_id: 1,
+            }
+
+            it(`removes XSS attack content`, () => {
+                return supertest(app)
+                    .post(`/notes`)
+                    .send(maliciousNote)
+                    .expect(res => {
+                        expect(res.body.name).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+                        expect(res.body.content).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+                        expect(res.body.folder_id).to.eql(maliciousNote.folder_id)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
+
+                        const expected = new Date().toLocaleString()
+                        const actual = new Date(res.body.date).toLocaleString()
+                        expect(actual).to.eql(expected)
                     })
             })
         })
     })
+
+    describe.only(`DELETE /notes`, () => {
+        context(`Givent there are notes in the database`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+
+            beforeEach(`insert malicious note`, () => {
+                return db
+                .into('noteful_folders')
+                .insert(testFolders)
+                .then(() => {
+                    return db
+                        .into('noteful_notes')
+                        .insert([testNotes])
+                })
+            })
+        })
+    }
 })
