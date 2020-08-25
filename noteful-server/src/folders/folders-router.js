@@ -20,7 +20,6 @@ foldersRouter
 
     FoldersService.insertFolder(req.app.get('db'), newFolder)
       .then(folder => {
-        debugger
         return res
           .status(201)
           .location(`/folders/${folder.id}`)
@@ -34,21 +33,40 @@ foldersRouter
 
 foldersRouter
   .route('/:folder_id')
-  .get((req, res, next) => {
-    FoldersService.getById(req.app.get('db'), req.params.folder_id)
-      .then(folder => {
-        !folder
-          ? res.status(404).json({
-            error: {
-              message: `Folder doesn't exist`
+  .all((req, res, next) => {
+      FoldersService.getById(
+          req.app.get('db'),
+          req.params.folder_id
+      )
+        .then(folder => {
+            if(!folder) {
+                return res.status(404).json({
+                    error: {
+                        message: `Folder doesn't exist`
+                    }
+                })
             }
-          })
-          : res.json({
-              id: folder.id,
-              name: xss(folder.name)
-          })
-      })
-      .catch(next)
+
+            res.folder = folder // save the folder for the next middleware
+            next() // call next to push to the next middleware
+        })
+        .catch(next)
+  })
+  .get((req, res, next) => {
+        res.json({
+            id: res.folder.id,
+            name: xss(res.folder.name)
+        })
+  })
+  .delete((req, res, next) => {
+      FoldersService.deleteFolder(
+          req.app.get('db'),
+          req.params.folder_id
+      )
+        .then(() => {
+            res.status(204).end()
+        })
+        .catch(next)
   })
 
 module.exports = foldersRouter

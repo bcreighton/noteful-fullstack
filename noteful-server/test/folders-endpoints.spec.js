@@ -182,4 +182,44 @@ describe('Folders Endpoints', function () {
         })
         
     })
+
+    describe(`DELETE /folders`, () => {
+        context(`Given no folders`, () => {
+            it(`responds with 400`, () => {
+                const folderId = 123456789
+
+                return supertest(app)
+                    .delete(`/folders/${folderId}`)
+                    .expect(404, {
+                        error: {
+                            message: `Folder doesn't exist`
+                        }
+                    })
+            })
+        })
+
+        context(`Given there are notes in teh database`, () => {
+            const testFolders = makeFoldersArray()
+
+            beforeEach(`insert folders`, () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+
+            it(`responds with 204 and removes the folder`, () => {
+                const idToRemove = 2
+                const expectedFolders = testFolders.filter(folder => folder.id !== idToRemove)
+
+                return supertest(app)
+                    .delete(`/folders/${idToRemove}`)
+                    .expect(204)
+                    .then(res => {
+                        return supertest(app)
+                            .get(`/folders`)
+                            .expect(expectedFolders)
+                    })
+            })
+        })
+    })
 })

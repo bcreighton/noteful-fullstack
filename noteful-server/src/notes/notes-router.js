@@ -46,24 +46,43 @@ notesRouter
 
 notesRouter
   .route('/:note_id')
-  .get((req, res, next) => {
-    NotesService.getById(req.app.get('db'), req.params.note_id)
-      .then(note => {
-        !note
-          ? res.status(404).json({
-            error: {
-              message: `Note doesn't exist`
+  .all((req, res, next) => {
+      NotesService.getById(
+          req.app.get('db'),
+          req.params.note_id
+      )
+        .then(note => {
+            if (!note) {
+                return res.status(404).json({
+                    error: {
+                        message: `Note doesn't exist`
+                    }
+                })
             }
-          })
-          : res.json({
-              id: note.id,
-              name: xss(note.name),
-              content: xss(note.content),
-              folder_id: note.folder_id,
-              date: note.date,
-          })
-      })
-      .catch(next)
+
+            res.note = note
+            next()
+        })
+        .catch(next)
+  })
+  .get((req, res, next) => {
+        res.json({
+            id: res.note.id,
+            name: xss(res.note.name),
+            content: xss(res.note.content),
+            folder_id: res.note.folder_id,
+            date: res.note.date,
+    })
+  })
+  .delete((req, res, next) => {
+      NotesService.deleteNote(
+          req.app.get('db'), 
+          req.params.note_id
+        )
+            .then(() => {
+                res.status(204).end()
+            })
+            .catch(next)
   })
 
 module.exports = notesRouter
