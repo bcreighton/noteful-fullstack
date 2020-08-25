@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const xss = require('xss')
 const FoldersService = require('./folders-service')
@@ -22,7 +23,7 @@ foldersRouter
       .then(folder => {
         return res
           .status(201)
-          .location(`/folders/${folder.id}`)
+          .location(path.posix.join(req.originalUrl, `/${folder.id}`))
           .json({
               id: folder.id,
               name: xss(folder.name)
@@ -64,6 +65,20 @@ foldersRouter
           req.params.folder_id
       )
         .then(() => {
+            res.status(204).end()
+        })
+        .catch(next)
+  })
+  .patch(jsonParser, (req, res, next) => {
+      const { name } = req.body
+      const folderToUpdate = { name }
+
+      FoldersService.updateFolder(
+          req.app.get('db'),
+          req.params.folder_id,
+          folderToUpdate
+      )
+        .then(numRowsAffected => {
             res.status(204).end()
         })
         .catch(next)

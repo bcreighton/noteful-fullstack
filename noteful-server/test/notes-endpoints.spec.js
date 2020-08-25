@@ -27,11 +27,11 @@ describe('Notes Endpoints', function () {
 
     after('disconnect from db', () => db.destroy())
 
-    describe(`GET /notes`, () => {
+    describe(`GET /api/notes`, () => {
         context(`Given no notes`, () => {
             it(`responds with 200 and an empty list`, () => {
                 return supertest(app)
-                    .get('/notes')
+                    .get('/api/notes')
                     .expect(200, [])
             })
         })
@@ -53,19 +53,19 @@ describe('Notes Endpoints', function () {
 
             it(`response with 200 and all of the notes`, () => {
                 return supertest(app)
-                    .get('/notes')
+                    .get('/api/notes')
                     .expect(200, testNotes)
             })
         })
     })
 
-    describe(`GET /notes/:note_id`, () => {
+    describe(`GET /api/notes/:note_id`, () => {
         context(`Given no notes`, () => {
             it(`responds with 404`, () => {
                 const noteId = 1234567890
 
                 return supertest(app)
-                    .get(`/notes/${noteId}`)
+                    .get(`/api/notes/${noteId}`)
                     .expect(404, {
                         error: {
                             message: `Note doesn't exist`
@@ -93,7 +93,7 @@ describe('Notes Endpoints', function () {
                 const expectedNote = testNotes[noteId - 1]
 
                 return supertest(app)
-                    .get(`/notes/${noteId}`)
+                    .get(`/api/notes/${noteId}`)
                     .expect(200, expectedNote)
             })
         })
@@ -120,7 +120,7 @@ describe('Notes Endpoints', function () {
 
             it(`removes XSS attack content`, () => {
                 return supertest(app)
-                    .get(`/notes/${maliciousNote.id}`)
+                    .get(`/api/notes/${maliciousNote.id}`)
                     .expect(200)
                     .expect(res => {
                         expect(res.body.name).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
@@ -130,7 +130,7 @@ describe('Notes Endpoints', function () {
         })
     })
 
-    describe(`POST /notes`, () => {
+    describe(`POST /api/notes`, () => {
         context(`Insert note`, () => {
             const testFolders = makeFoldersArray()
             const testNotes = makeNotesArray()
@@ -151,14 +151,14 @@ describe('Notes Endpoints', function () {
                 }
 
                 return supertest(app)
-                    .post(`/notes`)
+                    .post(`/api/notes`)
                     .send(newNote)
                     .expect(res => {
                         expect(res.body.name).to.eql(newNote.name)
                         expect(res.body.content).to.eql(newNote.content)
                         expect(res.body.folder_id).to.eql(newNote.folder_id)
                         expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
+                        expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
 
                         const expected = new Date().toLocaleString()
                         const actual = new Date(res.body.date).toLocaleString()
@@ -166,7 +166,7 @@ describe('Notes Endpoints', function () {
                     })
                     .then(postRes =>
                         supertest(app)
-                            .get(`/notes/${postRes.body.id}`)
+                            .get(`/api/notes/${postRes.body.id}`)
                             .expect(postRes.body)
                     )
             })
@@ -184,7 +184,7 @@ describe('Notes Endpoints', function () {
                     delete newNote[field]
 
                     return supertest(app)
-                        .post('/notes')
+                        .post('/api/notes')
                         .send(newNote)
                         .expect(400, {
                             error: {
@@ -212,14 +212,14 @@ describe('Notes Endpoints', function () {
 
             it(`removes XSS attack content`, () => {
                 return supertest(app)
-                    .post(`/notes`)
+                    .post(`/api/notes`)
                     .send(maliciousNote)
                     .expect(res => {
                         expect(res.body.name).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
                         expect(res.body.content).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
                         expect(res.body.folder_id).to.eql(maliciousNote.folder_id)
                         expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`/notes/${res.body.id}`)
+                        expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
 
                         const expected = new Date().toLocaleString()
                         const actual = new Date(res.body.date).toLocaleString()
@@ -229,13 +229,13 @@ describe('Notes Endpoints', function () {
         })
     })
 
-    describe(`DELETE /notes`, () => {
+    describe(`DELETE /api/notes/note_id`, () => {
         context(`Given no notes`, () => {
             it(`responds with 404`, () => {
                 const noteId = 123456789
 
                 return supertest(app)
-                    .delete(`/notes/${noteId}`)
+                    .delete(`/api/notes/${noteId}`)
                     .expect(404, {
                         error: {
                             message: `Note doesn't exist`
@@ -264,12 +264,67 @@ describe('Notes Endpoints', function () {
                 const expectedNotes = testNotes.filter(note => note.id !== idToRemove)
 
                 return supertest(app)
-                    .delete(`/notes/${idToRemove}`)
+                    .delete(`/api/notes/${idToRemove}`)
                     .expect(204)
                     .then(res => 
                         supertest(app)
-                            .get('/notes')
+                            .get('/api/notes')
                             .expect(expectedNotes)    
+                    )
+            })
+        })
+    })
+
+    describe.only(`PATCH /api/notes/note_id`, () => {
+        context(`Given no notes`, () => {
+            it(`responds with 404`, () => {
+                const noteId = 1234567890
+
+                return supertest(app)
+                    .patch(`/api/notes/${noteId}`)
+                    .expect(404, {
+                        error: {
+                            message: `Note doesn't exist`
+                        }
+                    })
+            })
+        })
+
+        context(`Given there are notes in the database`, () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+
+            beforeEach(`insert folders and notes`, () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                })
+            })
+
+            it(`responds with 204 and updates the note`, () => {
+                const idToUpdate = 2
+                const updateNote = {
+                    name: 'updated note name',
+                    content: 'updated note content',
+                    folder_id: 4
+                }
+                const expectedNote = {
+                    ...testNotes[idToUpdate - 1],
+                    ...updateNote,
+                }
+
+                return supertest(app)
+                    .patch(`/api/notes/${idToUpdate}`)
+                    .send(updateNote)
+                    .expect(204)
+                    .then(res => 
+                        supertest(app)
+                            .get(`/api/notes/${idToUpdate}`)
+                            .expect(expectedNote)
                     )
             })
         })

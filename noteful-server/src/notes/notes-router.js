@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const xss = require('xss')
 const NotesService = require('./notes-service')
@@ -32,7 +33,7 @@ notesRouter
       .then(note => {
         res
           .status(201)
-          .location(`/notes/${note.id}`)
+          .location(path.posix.join(req.originalUrl, `/${note.id}`))
           .json({
               id: note.id, 
               name: xss(note.name),
@@ -83,6 +84,20 @@ notesRouter
                 res.status(204).end()
             })
             .catch(next)
+  })
+  .patch(jsonParser,(req, res, next) => {
+      const {name, content, folder_id } = req.body
+      const noteToUpdate = { name, content, folder_id }
+
+      NotesService.updateNote(
+          req.app.get('db'),
+          req.params.note_id,
+          noteToUpdate
+      )
+        .then(numRowsAffected => {
+            res.status(204).end()
+        })
+        .catch(next)
   })
 
 module.exports = notesRouter

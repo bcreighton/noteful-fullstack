@@ -26,11 +26,11 @@ describe('Folders Endpoints', function () {
 
     after('disconnect from db', () => db.destroy())
 
-    describe(`GET /folders`, () => {
+    describe(`GET /api/folders`, () => {
         context(`Given no folders`, () => {
             it(`responds with 200 and an empty list`, () => {
                 return supertest(app)
-                    .get(`/folders`)
+                    .get(`/api/folders`)
                     .expect(200, [])
             })
         })
@@ -52,19 +52,19 @@ describe('Folders Endpoints', function () {
 
             it(`responds with 200 and all the folders`, () => {
                 return supertest(app)
-                    .get(`/folders`)
+                    .get(`/api/folders`)
                     .expect(200, testFolders)
             })
         })
     })
 
-    describe(`GET /folders/:folder_id`, () => {
+    describe(`GET /api/folders/:folder_id`, () => {
         context(`Given no folders`, () => {
             it(`responds with 404`, () => {
                 const folderId = 1234567890
 
                 return supertest(app)
-                    .get(`/folders/${folderId}`)
+                    .get(`/api/folders/${folderId}`)
                     .expect(404, {
                         error: {
                             message: `Folder doesn't exist`
@@ -93,7 +93,7 @@ describe('Folders Endpoints', function () {
                 const expectedFolder = testFolders[folderId - 1]
 
                 return supertest(app)
-                    .get(`/folders/${folderId}`)
+                    .get(`/api/folders/${folderId}`)
                     .expect(200, expectedFolder)
             })
         })
@@ -112,7 +112,7 @@ describe('Folders Endpoints', function () {
 
             it(`removes XSS attack content`, () => {
                 return supertest(app)
-                    .get(`/folders/${maliciousFolder.id}`)
+                    .get(`/api/folders/${maliciousFolder.id}`)
                     .expect(200)
                     .expect(res => {
                         expect(res.body.name).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
@@ -121,7 +121,7 @@ describe('Folders Endpoints', function () {
         })
     })
 
-    describe(`POST /folders`, () => {
+    describe(`POST /api/folders`, () => {
         context(`Insert folder`, () => {
             const testFolders = makeFoldersArray()
             const testNotes = makeNotesArray()
@@ -144,16 +144,16 @@ describe('Folders Endpoints', function () {
                 }
 
                 return supertest(app)
-                    .post(`/folders`)
+                    .post(`/api/folders`)
                     .send(newFolder)
                     .expect(res => {
                         expect(res.body.name).to.eql(newFolder.name)
                         expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
+                        expect(res.headers.location).to.eql(`/api/folders/${res.body.id}`)
                     })
                     .then(postRes =>
                         supertest(app)
-                            .get(`/folders/${postRes.body.id}`)
+                            .get(`/api/folders/${postRes.body.id}`)
                             .expect(postRes.body)
                     )
             })
@@ -166,16 +166,16 @@ describe('Folders Endpoints', function () {
 
             it(`removes XSS attack content`, () => {
                 return supertest(app)
-                    .post(`/folders`)
+                    .post(`/api/folders`)
                     .send(maliciousFolder)
                     .expect(res => {
                         expect(res.body.name).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
                         expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`/folders/${res.body.id}`)
+                        expect(res.headers.location).to.eql(`/api/folders/${res.body.id}`)
                     })
                     .then(postRes => 
                             supertest(app)
-                                .get(`/folders/${postRes.body.id}`)
+                                .get(`/api/folders/${postRes.body.id}`)
                                 .expect(postRes.body)
                         )
             })
@@ -183,13 +183,13 @@ describe('Folders Endpoints', function () {
         
     })
 
-    describe(`DELETE /folders`, () => {
+    describe(`DELETE /api/folders`, () => {
         context(`Given no folders`, () => {
             it(`responds with 400`, () => {
                 const folderId = 123456789
 
                 return supertest(app)
-                    .delete(`/folders/${folderId}`)
+                    .delete(`/api/folders/${folderId}`)
                     .expect(404, {
                         error: {
                             message: `Folder doesn't exist`
@@ -212,13 +212,60 @@ describe('Folders Endpoints', function () {
                 const expectedFolders = testFolders.filter(folder => folder.id !== idToRemove)
 
                 return supertest(app)
-                    .delete(`/folders/${idToRemove}`)
+                    .delete(`/api/folders/${idToRemove}`)
                     .expect(204)
                     .then(res => {
                         return supertest(app)
-                            .get(`/folders`)
+                            .get(`/api/folders`)
                             .expect(expectedFolders)
                     })
+            })
+        })
+    })
+
+    describe(`PATCH /api/folders/:folder_id`, () => {
+        context(`Given no notes`, () => {
+            it(`responds with 404`, () => {
+                const folderId = 123456789
+
+                return supertest(app)
+                    .patch(`/api/folders/${folderId}`)
+                    .expect(404, {
+                        error: {
+                            message: `Folder doesn't exist`
+                        }
+                    })
+            })
+        })
+
+        context(`Given there are folders in the database`, () => {
+            const testFolders = makeFoldersArray()
+
+            beforeEach(`insert folders`, () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+
+            it(`responds with 204 and updates the folder`, () => {
+                const idToUpdate = 2
+                const updateFolder = {
+                    name: 'updated folder title',
+                }
+                const expectedFolder = {
+                    ...testFolders[idToUpdate - 1],
+                    ...updateFolder,
+                }
+
+                return supertest(app)
+                    .patch(`/api/folders/${idToUpdate}`)
+                    .send(updateFolder)
+                    .expect(204)
+                    .then(res =>
+                        supertest(app)
+                            .get(`/api/folders/${idToUpdate}`)
+                            .expect(expectedFolder)
+                    )
             })
         })
     })
