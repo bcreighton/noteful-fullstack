@@ -16,6 +16,7 @@ class NoteListItem extends Component {
             <ModDate date={modDate} />
           </div>
         </Link>
+        <Link to={`/edit/${this.props.id}`}>Edit Note</Link>
         <DeleteBTN id={id} />
       </div>
     )

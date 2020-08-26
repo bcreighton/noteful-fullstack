@@ -84,6 +84,18 @@ export default class App extends Component {
     })
   }
 
+  deleteFolder = () => {
+
+  }
+
+  updateFolder = () => {
+
+  }
+
+  updateNote = () => {
+
+  }
+
   generateId() {
     String.prototype.splice = function (idx, rem, str) {
       return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
@@ -159,6 +171,11 @@ export default class App extends Component {
           path='/addNote'
           component={AddNote}
         />
+        
+        <Route 
+          path='/edit/:noteId'
+          componenet={EditNote}
+        />
 
       </>
     )
@@ -170,10 +187,13 @@ export default class App extends Component {
     const contextValue = {
       notes,
       folders,
-      deleteNote: this.deleteNote,
       generateId: this.generateId,
       addFolder: this.addFolder,
       addNote: this.addNote,
+      deleteFolder: this.deleteFolder,
+      deleteNote: this.deleteNote,
+      updateFolder: this.updateFolder,
+      updateNote: this.updateNote,
     }
 
     const className =
