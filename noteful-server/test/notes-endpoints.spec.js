@@ -275,7 +275,7 @@ describe('Notes Endpoints', function () {
         })
     })
 
-    describe.only(`PATCH /api/notes/note_id`, () => {
+    describe(`PATCH /api/notes/note_id`, () => {
         context(`Given no notes`, () => {
             it(`responds with 404`, () => {
                 const noteId = 1234567890
@@ -320,6 +320,42 @@ describe('Notes Endpoints', function () {
                 return supertest(app)
                     .patch(`/api/notes/${idToUpdate}`)
                     .send(updateNote)
+                    .expect(204)
+                    .then(res => 
+                        supertest(app)
+                            .get(`/api/notes/${idToUpdate}`)
+                            .expect(expectedNote)
+                    )
+            })
+
+            it(`responds with 400 when no required fields supplied`, () => {
+                const idToUpdate = 2
+                return supertest(app)
+                    .patch(`/api/notes/${idToUpdate}`)
+                    .send({ irrelevantField: 'foo'})
+                    .expect(400, {
+                        error: {
+                            message: `Request body must contain either 'name', 'content', or 'folder_id'`
+                        }
+                    })
+            })
+
+            it(`responds with 204 when updateing only a subset or data`, () => {
+                const idToUpdate = 2
+                const updateNote = {
+                    name: 'updated note name',
+                }
+                const expectedNote = {
+                    ...testNotes[idToUpdate - 1],
+                    ...updateNote,
+                }
+
+                return supertest(app)
+                    .patch(`/api/notes/${idToUpdate}`)
+                    .send({
+                        ...updateNote,
+                        fieldToIgnore: `should not be in GET response`
+                    })
                     .expect(204)
                     .then(res => 
                         supertest(app)
