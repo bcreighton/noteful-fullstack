@@ -20,7 +20,6 @@ export default class App extends Component {
   }
 
   setFolders = folders => {
-    debugger
     this.setState({
       folders,
       error: null,
@@ -35,8 +34,7 @@ export default class App extends Component {
   }
 
   getFolders() {
-    debugger
-    fetch('http//:localhost:8000/api/folders')
+    fetch('http://localhost:8000/api/folders')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -48,7 +46,7 @@ export default class App extends Component {
   }
 
   getNotes() {
-    fetch('http//:localhost:8000/api/notes')
+    fetch('http://localhost:8000/api/notes')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -97,31 +95,6 @@ export default class App extends Component {
 
   updateNote = () => {
 
-  }
-
-  generateId() {
-    String.prototype.splice = function (idx, rem, str) {
-      return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-    };
-
-    let s = '';
-    let id = '';
-
-    for (let i = 0; i < 3; i++) {
-      s += Math.random().toString(36).slice(2);
-    }
-    for (let n = 0; n < s.length; n++) {
-      if (n === 8) {
-        id = s.splice(n, 0, '-');
-      } else if (n === 14) {
-        id = id.splice(n, 0, '-');
-      } else if (n === 19) {
-        id = id.splice(n, 0, '-');
-      } else if (n === 26) {
-        id = id.splice(n, 0, '-');
-      }
-    }
-    return id;
   }
 
   renderSideBarRoutes() {
@@ -187,7 +160,6 @@ export default class App extends Component {
   render() {
     const { notes, folders } = this.state
 
-    debugger
 
     const contextValue = {
       notes,

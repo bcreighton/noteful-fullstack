@@ -13,7 +13,7 @@ class FolderList extends Component {
         {this.context.folders.map(folder => (
           <Folder
             key={folder.id}
-            id={folder.id}
+            id={folder.id.toString()}
             name={folder.name}
           />
         ))}
