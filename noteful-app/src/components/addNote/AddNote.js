@@ -110,12 +110,10 @@ class AddNote extends Component {
     const note = {
       content: noteContent.value,
       folderId: this.getFolderId(noteFolder.value),
-      id: this.context.generateId(),
-      modified: this.getCurrentDateTime(),
       name: noteTitle.value,
     }
 
-    fetch('http://localhost:9090/notes', {
+    fetch('https://localhost:8000/notes', {
       method: 'POST',
       body: JSON.stringify(note),
       headers: {

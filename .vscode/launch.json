@@ -19,7 +19,9 @@
         "<node_internals>/**"
       ],
       "type": "pwa-node",
-      "env": {"TEST_DB_URL":"postgresql://bryson:creativedev@localhost/noteful_test"}
+      "env": {
+        "TEST_DB_URL": "postgresql://bryson:creativedev@localhost/noteful_test"
+      }
     },
     {
       "type": "node",
@@ -28,7 +30,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\noteful-server\\test\\notes-service.spec.js"
+      "program": "${workspaceFolder}\\noteful-app\\src\\index.js"
     }
   ]
 }

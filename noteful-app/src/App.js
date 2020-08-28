@@ -7,6 +7,7 @@ import SideBarActiveNote from './components/sideBarActiveNote/SideBarActiveNote'
 import Note from './components/note/Note'
 import AddFolder from './components/addFolder/AddFolder'
 import AddNote from './components/addNote/AddNote'
+import EditNote from './components/editNote/EditNote'
 import './App.css';
 import NotefulContext from './NotefulContext';
 import NoteError from './components/NoteError';
@@ -19,6 +20,7 @@ export default class App extends Component {
   }
 
   setFolders = folders => {
+    debugger
     this.setState({
       folders,
       error: null,
@@ -33,7 +35,8 @@ export default class App extends Component {
   }
 
   getFolders() {
-    fetch('http://localhost:9090/folders')
+    debugger
+    fetch('http//:localhost:8000/api/folders')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -45,7 +48,7 @@ export default class App extends Component {
   }
 
   getNotes() {
-    fetch('http://localhost:9090/notes')
+    fetch('http//:localhost:8000/api/notes')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -171,8 +174,8 @@ export default class App extends Component {
           path='/addNote'
           component={AddNote}
         />
-        
-        <Route 
+
+        <Route
           path='/edit/:noteId'
           componenet={EditNote}
         />
@@ -183,6 +186,8 @@ export default class App extends Component {
 
   render() {
     const { notes, folders } = this.state
+
+    debugger
 
     const contextValue = {
       notes,

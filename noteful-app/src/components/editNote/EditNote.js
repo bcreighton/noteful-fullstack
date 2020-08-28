@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 import ValidationError from '../ValidationError'
 import NotefulContext from '../../NotefulContext'
 
-const Required = () => {
+const Required = () => (
     <span className='EditFolderRequired'>*</span>
-}
+)
 
 class EditNote extends Component {
     static contextType = NotefulContext;
@@ -109,7 +109,7 @@ class EditNote extends Component {
     componentDidMount() {
         const noteId = this.props.match.params.noteId
 
-        fetch(`https://localhost:8000/api/notes/${noteId}`, {
+        fetch(`http://localhost:8000/api/notes/${noteId}`, {
             method: 'GET'
         })
             .then(res => {
@@ -214,4 +214,10 @@ class EditNote extends Component {
             </form>
         )
     }
+}
+
+export default EditNote;
+
+EditNote.propTypes = {
+    history: PropTypes.object.isRequired,
 }

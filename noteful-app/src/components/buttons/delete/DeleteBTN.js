@@ -10,7 +10,7 @@ class DeleteBTN extends Component {
   deleteNoteRequest() {
     const { id, history } = this.props;
 
-    fetch(`http://localhost:9090/notes/${id}`, {
+    fetch(`https://localhost:8000/notes/${id}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json'
