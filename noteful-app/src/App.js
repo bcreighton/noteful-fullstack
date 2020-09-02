@@ -77,7 +77,7 @@ export default class App extends Component {
   deleteNote = (noteId, history) => {
     // Remove note with the noteId from state
     const newNotes = this.state.notes.filter(
-      note => note.id !== noteId
+      note => note.id.toString() !== noteId
     )
     history !== undefined && history.push('/')
     this.setState({
@@ -93,14 +93,21 @@ export default class App extends Component {
 
   }
 
-  updateNote = () => {
-
+  updateNote = (updatedNote) => {
+    const newNotes = this.state.notes.map(note => 
+        (note.id === updatedNote.id)
+          ? updatedNote
+          : note
+      )
+      this.setState({
+        notes: newNotes
+      })
   }
 
   renderSideBarRoutes() {
     return (
       <>
-        {['/', '/folder/:folderId', '/addFolder', '/addNote'].map(path => (
+        {['/', '/folder/:folderId', '/addFolder', '/addNote', '/edit/:noteId'].map(path => (
           <Route
             exact
             key={path}
@@ -125,15 +132,28 @@ export default class App extends Component {
             exact
             key={path}
             path={path}
-            component={Main}
+            // component={Main}
+            render={(props) => (
+               <Main {...props} />
+            )}
           />
         )
         )}
+        
         <Route
           path='/note/:noteId'
           render={(props) => (
             <NoteError>
               <Note {...props} />
+            </NoteError>
+          )}
+        />
+
+        <Route
+          path='/edit/:noteId'
+          render={(props) => (
+            <NoteError>
+              <EditNote {...props} />
             </NoteError>
           )}
         />
@@ -147,12 +167,6 @@ export default class App extends Component {
           path='/addNote'
           component={AddNote}
         />
-
-        <Route
-          path='/edit/:noteId'
-          componenet={EditNote}
-        />
-
       </>
     )
   }

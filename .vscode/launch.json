@@ -30,7 +30,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\noteful-app\\src\\index.js"
+      "program": "${workspaceFolder}\\noteful-server\\src\\server.js"
     }
   ]
 }

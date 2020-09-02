@@ -8,6 +8,7 @@ const Required = () => (
 )
 
 class EditNote extends Component {
+
     static contextType = NotefulContext;
 
     state = {
@@ -63,7 +64,7 @@ class EditNote extends Component {
         }
     }
 
-    ValidateNoteFolder() {
+    validateNoteFolder() {
         const noteFolder = this.state.noteFolder.value.trim();
 
         if (noteFolder.length === 0) {
@@ -71,7 +72,7 @@ class EditNote extends Component {
         }
     }
 
-    ValidateNoteContent() {
+    validateNoteContent() {
         const noteContent = this.state.noteContent.value.trim();
 
         if (noteContent.length === 0) {
@@ -81,25 +82,64 @@ class EditNote extends Component {
         }
     }
 
-    generateFolderDDList = () => {
+    generateFolderDDList = (selectedFolder) => {
         return this.context.folders.map(folder => (
-            <option
-                key={folder.id}
-                value={folder.name}
-            >
-                {folder.name}
-            </option>
+            folder.name === selectedFolder
+                ? <option
+                      key={folder.id}
+                      value={folder.name}
+                      selected
+                  >
+                      {folder.name}
+                  </option>
+                : <option
+                      key={folder.id}
+                      value={folder.name}
+                  >
+                      {folder.name}
+                  </option>
         ))
     }
 
-    getFolderName = (noteFolderId) => {
+    getFolderName = (FolderId) => {
         return this.context.folders.find(folder => {
-            return noteFolderId === folder.id
+            return FolderId === folder.id
         }).name
     }
 
-    handleSubmit = () => {
+    getFolderId = (noteFolder) => {
+        return this.context.folders.find(folder => {
+            return noteFolder === folder.name
+        }).id.toString()
+    }
 
+    handleSubmit = (e) => {
+        e.preventDefault()
+
+        const { noteTitle, noteFolder, noteContent} = e.target
+        const updatedNote = {
+            name: noteTitle.value,
+            content: noteContent.value,
+            folder_id: this.getFolderId(noteFolder.value)
+        }
+
+        fetch(`http://localhost:8000/api/notes/${this.props.match.params.noteId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedNote)
+        })
+            .then(res => {
+                if(!res.ok)
+                return res.json()
+                    .then(error => Promise.reject(error))
+            })
+            .then(() => {
+                this.context.updateNote(updatedNote)
+                this.props.history.push('/')
+            })
+            .catch(error => this.setState({error}))
     }
 
     handleClickCancel = () => {
@@ -121,9 +161,18 @@ class EditNote extends Component {
             })
             .then(note => {
                 this.setState({
-                    noteTitle: note.name,
-                    noteFolder: note.folder_id,
-                    noteContent: note.content,
+                    noteTitle: {
+                        value: note.name,
+                        touched: true,
+                    },
+                    noteFolder: {
+                        value: this.getFolderName(note.folder_id),
+                        touched: true,
+                    },
+                    noteContent: {
+                        value: note.content,
+                        touched: true,
+                    },
                 })
             })
             .catch(error => this.setState({ error }))
@@ -134,9 +183,8 @@ class EditNote extends Component {
         const noteFolderError = this.validateNoteFolder();
         const noteContentError = this.validateNoteContent();
         const { error } = this.state;
-        const folderList = this.generateFolderDDList();
-
-        const { noteTitle, noteFolder, noteContent } = this.state
+        const { noteTitle, noteFolder, noteContent } = this.state;
+        const folderList = this.generateFolderDDList(noteFolder.value);
 
         return (
             <form
@@ -159,7 +207,7 @@ class EditNote extends Component {
                         placeholder='Enter note title'
                         onChange={e => this.updateNoteTitle(e.target.value)}
                         required
-                        value={noteTitle}
+                        value={noteTitle.value}
                     />
                     {this.state.noteTitle.touched && (
                         <ValidationError message={noteTitleError} />
@@ -176,7 +224,7 @@ class EditNote extends Component {
                         name='noteFolder'
                         onChange={e => this.updateNoteFolder(e.target.value)}
                         required
-                        selected={this.getFolderName(noteFolder)}
+                        selected={noteFolder.value}
                     >
                         {folderList}
                     </select>
@@ -196,7 +244,7 @@ class EditNote extends Component {
                         placeholder="Enter your note content here..."
                         onChange={e => this.updateNoteContent(e.target.value)}
                         required
-                        value={noteContent}
+                        value={noteContent.value}
                     ></textarea>
                     {this.state.noteContent.touched && (
                         <ValidationError message={noteContentError} />

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import {Link} from 'react-router-dom'
 import PropTypes from 'prop-types'
 import NotefulContext from '../../NotefulContext'
 import ModDate from '../modDate/ModDate'
@@ -15,13 +16,13 @@ class Note extends Component {
 
   render() {
     const selectedNote = this.getNote()
-    debugger
 
     return (
       <>
         <div className='noteHeader'>
           <h2 className='noteTitle'>{selectedNote.name}</h2>
           <ModDate date={selectedNote.date} />
+          <Link className='edit' to={`/edit/${this.props.match.params.noteId}`}>Edit Note</Link>
           <DeleteBTN id={selectedNote.id} history={this.props.history} />
         </div>
         <NoteContent content={selectedNote.content} />

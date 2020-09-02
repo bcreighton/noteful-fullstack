@@ -9,7 +9,7 @@ class Main extends Component {
     return (
       <section className='mainSection'>
         <NoteListError>
-          <NoteList folderId={this.props.match.params.folderId} />
+          <NoteList folderId={this.props.match.params.folderId} history={this.props.history} />
         </NoteListError>
       </section>
     )

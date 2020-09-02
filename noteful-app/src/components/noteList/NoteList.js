@@ -26,6 +26,7 @@ export default class NoteList extends Component {
           title={note.name}
           modDate={note.date}
           content={note.content}
+          history={this.props.history}
         />
       </NoteItemError>
     ))
