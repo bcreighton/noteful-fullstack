@@ -1,5 +1,5 @@
-const NotesService = require('../src/notes-service')
-const FoldersService = require('../src/folders-service')
+const NotesService = require('../src/notes/notes-service')
+const FoldersService = require('../src/folders/folders-service')
 const knex = require('knex')
 const { expect } = require('chai')
 
@@ -101,7 +101,7 @@ describe('Notes service object', function () {
     },
   ]
 
-  before(() => {
+  before('make knex instance', () => {
     db = knex({
       client: 'pg',
       connection: process.env.TEST_DB_URL,
@@ -109,25 +109,25 @@ describe('Notes service object', function () {
   })
 
   //remove foreign key constraint temporarily to remove current table data before tests run
-  before(() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-  before(() => db('noteful_notes').truncate())
-  before(() => db('noteful_folders').truncate())
-  before(() => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+  before('remove foreign key constraints', () => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
+  before('clean noteful_notes table', () => db('noteful_notes').truncate())
+  before('clean noteful_folders table', () => db('noteful_folders').truncate())
+  before('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
 
   //remove foreign key constraint temporarily to remove current table data to avoid test leak
-  afterEach(() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
-  afterEach(() => db('noteful_notes').truncate())
-  afterEach(() => db('noteful_folders').truncate())
-  afterEach(() => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
+  afterEach('remove foreign key constraints',() => db.raw("ALTER TABLE noteful_notes DROP CONSTRAINT noteful_notes_folder_id_fkey"))
+  afterEach('clean noteful_notes table', () => db('noteful_notes').truncate())
+  afterEach('clean noteful_folders table', () => db('noteful_folders').truncate())
+  afterEach('readd foreign key constraints', () => db.raw("ALTER TABLE noteful_notes ADD CONSTRAINT noteful_notes_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES noteful_folders(id)"))
 
-  after(() => db.destroy())
+  after('disconnect from db', () => db.destroy())
 
   context(`Given 'noteful_folders' has data`, () => {
-    beforeEach(() => {
+    beforeEach('insert folders', () => {
       return db
         .into('noteful_folders')
         .insert(testFolders)
-        .then(() => {
+        .then('insert notes', () => {
           return db
             .into('noteful_notes')
             .insert(testNotes)
@@ -142,7 +142,44 @@ describe('Notes service object', function () {
         })
     })
 
-    it(`getById() resolvess a folder by id from 'noteful_folders' table`, () => {
+    it(`getById() resolves a folder by id from 'noteful_folders`, () => {
+      const thirdId = 3
+      const thirdTestFolder = testFolders[thirdId - 1]
+
+      return FoldersService.getById(db, thirdId)
+        .then(actual => {
+          expect(actual).to.eql({
+            id: thirdId,
+            name: thirdTestFolder.name,
+          })
+        })
+    })
+
+    it(`deleteFolder() removes a folder by id from 'noteful_folders' table`, () => {
+      const folderId = 3
+
+      return FoldersService.deleteFolder(db, folderId)
+        .then(() => FoldersService.getAllFolders(db))
+        .then(allFolders => {
+          const expected = testFolders.filter(folder => folder.id !== folderId)
+          expect(allFolders).to.eql(expected)
+        })
+    })
+
+    it(`updateFolder() updates a folder from the 'noteful_folders' table`, () => {
+      const idOfFolderToUpdate = 3
+      const newFolderData = {
+        name: 'updated name',
+      }
+
+      return FoldersService.updateFolder(db, idOfFolderToUpdate, newFolderData)
+        .then(() => FoldersService.getById(db, idOfFolderToUpdate))
+        .then(folder => {
+          expect(folder).to.eql({
+            id: idOfFolderToUpdate,
+            ...newFolderData,
+          })
+        })
     })
   })
 
@@ -155,7 +192,7 @@ describe('Notes service object', function () {
     })
 
     it(`insertFolder() inserts a new folder and resolves the new folder with an 'id'`, () => {
-      const newFolder= {
+      const newFolder = {
         name: "Test new name",
       }
 

@@ -7,7 +7,7 @@ import './NoteListItem.css'
 
 class NoteListItem extends Component {
   render() {
-    const { id, title, modDate } = this.props
+    const { id, title, modDate, history } = this.props
     return (
       <div className='noteItem'>
         <Link to={`/note/${id}`} id={id} >
@@ -16,7 +16,8 @@ class NoteListItem extends Component {
             <ModDate date={modDate} />
           </div>
         </Link>
-        <DeleteBTN id={id} />
+        <Link className='edit' to={`/edit/${this.props.id}`}>Edit Note</Link>
+        <DeleteBTN id={id} history={history} />
       </div>
     )
   }

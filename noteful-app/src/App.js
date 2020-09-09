@@ -7,6 +7,7 @@ import SideBarActiveNote from './components/sideBarActiveNote/SideBarActiveNote'
 import Note from './components/note/Note'
 import AddFolder from './components/addFolder/AddFolder'
 import AddNote from './components/addNote/AddNote'
+import EditNote from './components/editNote/EditNote'
 import './App.css';
 import NotefulContext from './NotefulContext';
 import NoteError from './components/NoteError';
@@ -33,7 +34,7 @@ export default class App extends Component {
   }
 
   getFolders() {
-    fetch('http://localhost:9090/folders')
+    fetch('http://localhost:8000/api/folders')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -45,7 +46,7 @@ export default class App extends Component {
   }
 
   getNotes() {
-    fetch('http://localhost:9090/notes')
+    fetch('http://localhost:8000/api/notes')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -76,7 +77,7 @@ export default class App extends Component {
   deleteNote = (noteId, history) => {
     // Remove note with the noteId from state
     const newNotes = this.state.notes.filter(
-      note => note.id !== noteId
+      note => note.id.toString() !== noteId
     )
     history !== undefined && history.push('/')
     this.setState({
@@ -84,35 +85,29 @@ export default class App extends Component {
     })
   }
 
-  generateId() {
-    String.prototype.splice = function (idx, rem, str) {
-      return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-    };
+  deleteFolder = () => {
 
-    let s = '';
-    let id = '';
+  }
 
-    for (let i = 0; i < 3; i++) {
-      s += Math.random().toString(36).slice(2);
-    }
-    for (let n = 0; n < s.length; n++) {
-      if (n === 8) {
-        id = s.splice(n, 0, '-');
-      } else if (n === 14) {
-        id = id.splice(n, 0, '-');
-      } else if (n === 19) {
-        id = id.splice(n, 0, '-');
-      } else if (n === 26) {
-        id = id.splice(n, 0, '-');
-      }
-    }
-    return id;
+  updateFolder = () => {
+
+  }
+
+  updateNote = (updatedNote) => {
+    const newNotes = this.state.notes.map(note => 
+        (note.id === updatedNote.id)
+          ? updatedNote
+          : note
+      )
+      this.setState({
+        notes: newNotes
+      })
   }
 
   renderSideBarRoutes() {
     return (
       <>
-        {['/', '/folder/:folderId', '/addFolder', '/addNote'].map(path => (
+        {['/', '/folder/:folderId', '/addFolder', '/addNote', '/edit/:noteId'].map(path => (
           <Route
             exact
             key={path}
@@ -137,15 +132,28 @@ export default class App extends Component {
             exact
             key={path}
             path={path}
-            component={Main}
+            // component={Main}
+            render={(props) => (
+               <Main {...props} />
+            )}
           />
         )
         )}
+        
         <Route
           path='/note/:noteId'
           render={(props) => (
             <NoteError>
               <Note {...props} />
+            </NoteError>
+          )}
+        />
+
+        <Route
+          path='/edit/:noteId'
+          render={(props) => (
+            <NoteError>
+              <EditNote {...props} />
             </NoteError>
           )}
         />
@@ -159,7 +167,6 @@ export default class App extends Component {
           path='/addNote'
           component={AddNote}
         />
-
       </>
     )
   }
@@ -167,13 +174,17 @@ export default class App extends Component {
   render() {
     const { notes, folders } = this.state
 
+
     const contextValue = {
       notes,
       folders,
-      deleteNote: this.deleteNote,
       generateId: this.generateId,
       addFolder: this.addFolder,
       addNote: this.addNote,
+      deleteFolder: this.deleteFolder,
+      deleteNote: this.deleteNote,
+      updateFolder: this.updateFolder,
+      updateNote: this.updateNote,
     }
 
     const className =

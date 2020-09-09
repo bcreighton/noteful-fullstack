@@ -28,3 +28,22 @@
   grid-row: 2 / 3;
   align-self: center;
 }
+
+.edit {
+  width: 73%;
+  grid-column: 2/3;
+  grid-row: 1/2;
+  align-self: center;
+  border: 2px solid black;
+  padding: 15px;
+  margin-bottom: 20px;
+  z-index: 100;
+  text-align: center;
+  font-size: 1.5rem;
+  background-color: azure;
+}
+
+.edit:hover {
+  width: 73%;
+  background-color: rgb(241, 225, 0);
+}

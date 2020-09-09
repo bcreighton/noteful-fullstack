@@ -12,7 +12,7 @@ export default class NoteList extends Component {
   getNotesById() {
     return this.context.notes.filter(note => {
       return (
-        note.folderId === this.props.folderId
+        note.folder_id.toString() === this.props.folderId
       )
     });
   }
@@ -21,11 +21,12 @@ export default class NoteList extends Component {
     return notes.map(note => (
       <NoteItemError key={note.id}>
         <NoteListItem
-          id={note.id}
-          folderId={note.folderId}
+          id={note.id.toString()}
+          folderId={note.folder_id.toString()}
           title={note.name}
-          modDate={note.modified}
+          modDate={note.date}
           content={note.content}
+          history={this.props.history}
         />
       </NoteItemError>
     ))

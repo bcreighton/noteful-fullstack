@@ -92,7 +92,7 @@ class AddNote extends Component {
   getFolderId = (noteFolder) => {
     return this.context.folders.find(folder => {
       return noteFolder === folder.name
-    }).id
+    }).id.toString()
   }
 
   getCurrentDateTime = () => {
@@ -109,13 +109,11 @@ class AddNote extends Component {
     const { noteTitle, noteFolder, noteContent } = e.target
     const note = {
       content: noteContent.value,
-      folderId: this.getFolderId(noteFolder.value),
-      id: this.context.generateId(),
-      modified: this.getCurrentDateTime(),
+      folder_id: this.getFolderId(noteFolder.value),
       name: noteTitle.value,
     }
 
-    fetch('http://localhost:9090/notes', {
+    fetch('http://localhost:8000/api/notes', {
       method: 'POST',
       body: JSON.stringify(note),
       headers: {
