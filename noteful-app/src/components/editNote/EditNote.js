@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import ValidationError from '../ValidationError'
 import NotefulContext from '../../NotefulContext'
+import config from '../../config'
 
 const Required = () => (
     <span className='EditFolderRequired'>*</span>
@@ -123,7 +124,7 @@ class EditNote extends Component {
             folder_id: this.getFolderId(noteFolder.value)
         }
 
-        fetch(`http://localhost:8000/api/notes/${this.props.match.params.noteId}`, {
+        fetch(config.API_ENDPOINT + `notes/${this.props.match.params.noteId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -149,7 +150,7 @@ class EditNote extends Component {
     componentDidMount() {
         const noteId = this.props.match.params.noteId
 
-        fetch(`http://localhost:8000/api/notes/${noteId}`, {
+        fetch(config.API_ENDPOINT + `notes/${noteId}`, {
             method: 'GET'
         })
             .then(res => {

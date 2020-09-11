@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import ValidationError from '../ValidationError'
 import NotefulContext from '../../NotefulContext'
+import config from '../../config'
 
 const Required = () => (
   <span className='AddFolderRequired'>*</span>
@@ -44,7 +45,7 @@ class AddFolder extends Component {
       name: folderName.value,
     }
 
-    fetch('http://localhost:8000/api/folders', {
+    fetch(config.API_ENDPOINT + 'folders', {
       method: 'POST',
       body: JSON.stringify(folder),
       headers: {

@@ -11,6 +11,7 @@ import EditNote from './components/editNote/EditNote'
 import './App.css';
 import NotefulContext from './NotefulContext';
 import NoteError from './components/NoteError';
+import config from './config'
 
 export default class App extends Component {
   state = {
@@ -34,7 +35,7 @@ export default class App extends Component {
   }
 
   getFolders() {
-    fetch('http://localhost:8000/api/folders')
+    fetch(config.API_ENDPOINT + 'folders')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)
@@ -46,7 +47,7 @@ export default class App extends Component {
   }
 
   getNotes() {
-    fetch('http://localhost:8000/api/notes')
+    fetch(config.API_ENDPOINT + 'notes')
       .then(res => {
         if (!res.ok) {
           throw new Error(res.status)

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import NotefulContext from '../../../NotefulContext'
 import '../Button.css'
 import './DeleteBTN.css'
+import config from '../../../config'
 
 class DeleteBTN extends Component {
   static contextType = NotefulContext;
@@ -10,7 +11,7 @@ class DeleteBTN extends Component {
   deleteNoteRequest() {
     const { id, history } = this.props;
 
-    fetch(`http://localhost:8000/api/notes/${id}`, {
+    fetch(config.API_ENDPOINT + `notes/${id}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json'

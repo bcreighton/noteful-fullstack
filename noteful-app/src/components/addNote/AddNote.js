@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import ValidationError from '../ValidationError'
 import NotefulContext from '../../NotefulContext'
+import config from '../../config'
 
 const Required = () => (
   <span className='AddFolderRequired'>*</span>
@@ -113,7 +114,7 @@ class AddNote extends Component {
       name: noteTitle.value,
     }
 
-    fetch('http://localhost:8000/api/notes', {
+    fetch(config.API_ENDPOINT + 'notes', {
       method: 'POST',
       body: JSON.stringify(note),
       headers: {
